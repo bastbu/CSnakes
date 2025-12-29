@@ -43,6 +43,7 @@ public static partial class PythonParser
         public static readonly PythonTypeSpecParser Dict = TypeDefinitionParser.Subscript(PythonTypeSpec (k, v) => new DictType(k, v));
         public static readonly PythonTypeSpecParser Mapping = TypeDefinitionParser.Subscript(PythonTypeSpec (k, v) => new MappingType(k, v));
         public static readonly PythonTypeSpecParser Generator = TypeDefinitionParser.Subscript(PythonTypeSpec (y, s, r) => new GeneratorType(y, s, r));
+        public static readonly PythonTypeSpecParser AsyncGenerator = TypeDefinitionParser.Subscript(PythonTypeSpec (y, s) => new AsyncGeneratorType(y, s));
         public static readonly PythonTypeSpecParser Coroutine = TypeDefinitionParser.Subscript(PythonTypeSpec (y, s, r) => new CoroutineType(y, s, r));
 
         public static readonly PythonTypeSpecParser Callable =
@@ -109,25 +110,26 @@ public static partial class PythonParser
                                      Token.EqualTo(PythonToken.QualifiedIdentifier))
             from type in name.CharSpan() switch
             {
-                "None"                                                           => TypeDefinitionSubParsers.None,
-                "Any"                                                            => TypeDefinitionSubParsers.Any,
-                "int"                                                            => TypeDefinitionSubParsers.Int,
-                "str"                                                            => TypeDefinitionSubParsers.Str,
-                "float"                                                          => TypeDefinitionSubParsers.Float,
-                "bool"                                                           => TypeDefinitionSubParsers.Bool,
-                "bytes"                                                          => TypeDefinitionSubParsers.Bytes,
-                "Buffer" or "collections.abc.Buffer"                             => TypeDefinitionSubParsers.Buffer,
-                "Optional" or "typing.Optional"                                  => TypeDefinitionSubParsers.Optional,
-                "list" or "List" or "typing.List"                                => TypeDefinitionSubParsers.List,
-                "Sequence" or "collections.abc.Sequence" or "typing.Sequence"    => TypeDefinitionSubParsers.Sequence,
-                "dict" or "Dict" or "typing.Dict"                                => TypeDefinitionSubParsers.Dict,
-                "Mapping" or "collections.abc.Mapping" or "typing.Mapping"       => TypeDefinitionSubParsers.Mapping,
-                "Generator" or "collections.abc.Generator" or "typing.Generator" => TypeDefinitionSubParsers.Generator,
-                "Coroutine" or "collections.abc.Coroutine" or "typing.Coroutine" => TypeDefinitionSubParsers.Coroutine,
-                "Callable" or "typing.Callable" or "collections.abc.Callable"    => TypeDefinitionSubParsers.Callable,
-                "Literal" or "typing.Literal"                                    => TypeDefinitionSubParsers.Literal,
-                "Union" or "typing.Union"                                        => TypeDefinitionSubParsers.Union,
-                "tuple" or "Tuple" or "typing.Tuple"                             => TypeDefinitionSubParsers.Tuple,
+                "None"                                                                          => TypeDefinitionSubParsers.None,
+                "Any"                                                                           => TypeDefinitionSubParsers.Any,
+                "int"                                                                           => TypeDefinitionSubParsers.Int,
+                "str"                                                                           => TypeDefinitionSubParsers.Str,
+                "float"                                                                         => TypeDefinitionSubParsers.Float,
+                "bool"                                                                          => TypeDefinitionSubParsers.Bool,
+                "bytes"                                                                         => TypeDefinitionSubParsers.Bytes,
+                "Buffer" or "collections.abc.Buffer"                                            => TypeDefinitionSubParsers.Buffer,
+                "Optional" or "typing.Optional"                                                 => TypeDefinitionSubParsers.Optional,
+                "list" or "List" or "typing.List"                                               => TypeDefinitionSubParsers.List,
+                "Sequence" or "collections.abc.Sequence" or "typing.Sequence"                   => TypeDefinitionSubParsers.Sequence,
+                "dict" or "Dict" or "typing.Dict"                                               => TypeDefinitionSubParsers.Dict,
+                "Mapping" or "collections.abc.Mapping" or "typing.Mapping"                      => TypeDefinitionSubParsers.Mapping,
+                "Generator" or "collections.abc.Generator" or "typing.Generator"                => TypeDefinitionSubParsers.Generator,
+                "AsyncGenerator" or "collections.abc.AsyncGenerator" or "typing.AsyncGenerator" => TypeDefinitionSubParsers.AsyncGenerator,
+                "Coroutine" or "collections.abc.Coroutine" or "typing.Coroutine"                => TypeDefinitionSubParsers.Coroutine,
+                "Callable" or "typing.Callable" or "collections.abc.Callable"                   => TypeDefinitionSubParsers.Callable,
+                "Literal" or "typing.Literal"                                                   => TypeDefinitionSubParsers.Literal,
+                "Union" or "typing.Union"                                                       => TypeDefinitionSubParsers.Union,
+                "tuple" or "Tuple" or "typing.Tuple"                                            => TypeDefinitionSubParsers.Tuple,
 
                 _ => from subscript in TypeDefinitionSubParsers.Subscript
                      select (PythonTypeSpec)new ParsedPythonTypeSpec(name.ToStringValue(), [..subscript]),

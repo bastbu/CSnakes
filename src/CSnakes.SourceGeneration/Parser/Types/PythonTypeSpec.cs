@@ -129,6 +129,11 @@ public sealed record GeneratorType(PythonTypeSpec Yield, PythonTypeSpec Send, Py
     public override string ToString() => Format($"{Yield}, {Send}, {Return}");
 }
 
+public sealed record AsyncGeneratorType(PythonTypeSpec Yield, PythonTypeSpec Send) : ClosedGenericType("AsyncGenerator")
+{
+    public override string ToString() => Format($"{Yield}, {Send}");
+}
+
 public sealed record LiteralType(ValueArray<PythonConstant> Constants) : PythonTypeSpec("Literal")
 {
     public override string ToString() => Format($"{string.Join(", ", Constants)}");

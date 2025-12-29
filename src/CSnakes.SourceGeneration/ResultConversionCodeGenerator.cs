@@ -109,6 +109,21 @@ internal static class ResultConversionCodeGenerator
                                                    generator.Return.ImporterTypeSyntax
                                                ]));
             }
+            case AsyncGeneratorType { Yield: var yt, Send: var st }:
+                {
+                    var generator = (Yield: Create(yt), Send: Create(st));
+                    return new ConversionGenerator(TypeReflection.CreateGenericType("IAsyncGeneratorIterator",
+                                                   [
+                                                       generator.Yield.TypeSyntax,
+                                                       generator.Send.TypeSyntax,
+                                                   ]),
+                                                   TypeReflection.CreateGenericType("AsyncGenerator",
+                                                   [
+                                                       generator.Yield.TypeSyntax,
+                                                       generator.Send.TypeSyntax,
+                                                       generator.Yield.ImporterTypeSyntax,
+                                                   ]));
+                }
             case CoroutineType { Yield: NoneType, Send: NoneType, Return: var rt }:
             {
                 return new CoroutineConversionGenerator(rt);
@@ -126,6 +141,21 @@ internal static class ResultConversionCodeGenerator
     {
         public ConversionGenerator(TypeSyntax typeSyntax, SimpleNameSyntax simpleImporterTypeSyntax) :
             this(typeSyntax, QualifiedName(ImportersQualifiedName, simpleImporterTypeSyntax)) { }
+
+        public TypeSyntax TypeSyntax { get; } = typeSyntax;
+        public TypeSyntax ImporterTypeSyntax { get; } = importerTypeSyntax;
+
+        public IEnumerable<StatementSyntax> GenerateCode(string inputName, string outputName,
+                                                         string cancellationTokenName) =>
+            [ParseStatement($"var {outputName} = {inputName}.BareImportAs<{TypeSyntax}, {ImporterTypeSyntax}>();")];
+    }
+
+    private sealed class ConversionAsyncGenerator(TypeSyntax typeSyntax, TypeSyntax importerTypeSyntax) :
+        IResultConversionCodeGenerator
+    {
+        public ConversionAsyncGenerator(TypeSyntax typeSyntax, SimpleNameSyntax simpleImporterTypeSyntax) :
+            this(typeSyntax, QualifiedName(ImportersQualifiedName, simpleImporterTypeSyntax))
+        { }
 
         public TypeSyntax TypeSyntax { get; } = typeSyntax;
         public TypeSyntax ImporterTypeSyntax { get; } = importerTypeSyntax;

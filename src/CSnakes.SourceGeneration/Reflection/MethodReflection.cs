@@ -16,7 +16,6 @@ public static class MethodReflection
         // Step 1: Determine the return type of the method
         PythonTypeSpec returnPythonType = function.ReturnType;
 
-        ParameterSyntax? cancellationTokenParameterSyntax = null;
         const string cancellationTokenName = "cancellationToken";
 
         var doesReturnValue = returnPythonType is not NoneType;
@@ -26,13 +25,16 @@ public static class MethodReflection
             ? TypeReflection.AsPredefinedType(returnPythonType, TypeReflection.ConversionDirection.FromPython).First()
             : PredefinedType(Token(SyntaxKind.VoidKeyword));
 
-        if (function.IsAsync || returnPythonType is CoroutineType { Yield: NoneType, Send: NoneType })
-        {
-            cancellationTokenParameterSyntax =
-                Parameter(Identifier(cancellationTokenName))
-                    .WithType(IdentifierName("CancellationToken"))
-                    .WithDefault(EqualsValueClause(LiteralExpression(SyntaxKind.DefaultLiteralExpression)));
+        bool needsCancellationToken = function.IsAsync || returnPythonType is CoroutineType { Yield: NoneType, Send: NoneType };
 
+        ParameterSyntax? cancellationTokenParameterSyntax = needsCancellationToken ?
+            Parameter(Identifier(cancellationTokenName))
+                .WithType(IdentifierName("CancellationToken"))
+                .WithDefault(EqualsValueClause(LiteralExpression(SyntaxKind.DefaultLiteralExpression)))
+            : null;
+
+        if (needsCancellationToken && returnPythonType is not AsyncGeneratorType)
+        {
             // If simple async type annotation, treat as Coroutine[None, None, T] where T is the return type
             if (returnPythonType.Name != "Coroutine")
             {
