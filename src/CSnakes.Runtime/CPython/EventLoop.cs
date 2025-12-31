@@ -17,13 +17,33 @@ internal sealed class EventLoop : IDisposable
         public virtual void Dispose() { }
     }
 
-    private sealed class ScheduleRequest(PyObject coroutine, CancellationToken cancellationToken) : Request
+    private sealed class ScheduleRequest : Request
     {
-        public PyObject Coroutine { get; } = coroutine.Clone();
-        public CancellationToken CancellationToken { get; } = cancellationToken;
+        public static ScheduleRequest Create(PyObject coroutine, CancellationToken cancellationToken)
+        {
+            var clone = coroutine.Clone();
+            try
+            {
+                return new ScheduleRequest(clone, cancellationToken);
+            }
+            catch
+            {
+                coroutine.Dispose();
+                throw;
+            }
+        }
+
+        private ScheduleRequest(PyObject coroutine, CancellationToken cancellationToken)
+        {
+            Coroutine = coroutine;
+            CancellationToken = cancellationToken;
+        }
+
+        public PyObject Coroutine { get; }
+        public CancellationToken CancellationToken { get; }
         public TaskCompletionSource<TaskCompletionSource<PyObject>> CompletionSource { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public override void Dispose() => coroutine.Dispose();
+        public override void Dispose() => Coroutine.Dispose();
     }
 
     private sealed class CancelRequest(CoroutineTask coroTask, CancellationToken cancellationToken) : Request
@@ -45,6 +65,9 @@ internal sealed class EventLoop : IDisposable
         private PyObject? doneMethod;
         private CancellationToken cancellationToken;
 
+        public enum LifecycleChangeKind { Canceling, Completed }
+        public event Action<CoroutineTask, LifecycleChangeKind>? LifecycleChange;
+
         public TaskCompletionSource<PyObject> CompletionSource { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         /// <remarks>
@@ -54,6 +77,8 @@ internal sealed class EventLoop : IDisposable
         /// </remarks>
         private PyObject DoneMethod => this.doneMethod ??= pyTask.GetAttr("done");
 
+        private bool HasCompleted => this.pyTask.IsClosed;
+
         public void Dispose()
         {
             this.doneMethod?.Dispose();
@@ -62,6 +87,11 @@ internal sealed class EventLoop : IDisposable
 
         public void Cancel(CancellationToken cancellationToken = default)
         {
+            if (HasCompleted)
+                return;
+
+            LifecycleChange?.Invoke(this, LifecycleChangeKind.Canceling);
+
             using var cancelMethod = pyTask.GetAttr("cancel");
             cancelMethod.Call().Dispose();
             this.cancellationToken = cancellationToken;
@@ -72,13 +102,15 @@ internal sealed class EventLoop : IDisposable
             if (ProcessConclusion() == TaskStatus.Running)
                 return false;
 
+            LifecycleChange?.Invoke(this, LifecycleChangeKind.Completed);
+
             Dispose();
             return true;
         }
 
         private TaskStatus ProcessConclusion()
         {
-            if (this.pyTask.IsClosed)
+            if (HasCompleted)
                 return CompletionSource.Task.Status;
 
             // If the task is not done yet, return without doing anything.
@@ -172,7 +204,7 @@ internal sealed class EventLoop : IDisposable
 
     public async Task<PyObject> RunCoroutineAsync(PyObject coroutine, CancellationToken cancellationToken)
     {
-        using var request = new ScheduleRequest(coroutine, cancellationToken);
+        using var request = ScheduleRequest.Create(coroutine, cancellationToken);
         Enqueue(request);
         var taskCompletionSource = await request.CompletionSource.Task.ConfigureAwait(false);
         return await taskCompletionSource.Task.ConfigureAwait(false);
@@ -234,7 +266,8 @@ internal sealed class EventLoop : IDisposable
                             // the event loop when the task is done.
 
                             var pyTask = this.methods.CreateTask.Call(request.Coroutine);
-                            IDisposable? disposable = pyTask;
+                            IDisposable disposable = pyTask;
+                            CancellationTokenRegistration cancellationRegistration = default;
 
                             try
                             {
@@ -246,15 +279,21 @@ internal sealed class EventLoop : IDisposable
 
                                 if (request.CancellationToken is { CanBeCanceled: true } cancellationToken)
                                 {
-                                    _ = cancellationToken.Register(() =>
-                                        Enqueue(new CancelRequest(coroTask, cancellationToken)));
+                                    cancellationRegistration = cancellationToken.Register(
+                                        () => Enqueue(new CancelRequest(coroTask, cancellationToken)),
+                                        useSynchronizationContext: false);
+
+                                    coroTask.LifecycleChange += (_, kind) =>
+                                    {
+                                        if (kind is CoroutineTask.LifecycleChangeKind.Canceling or CoroutineTask.LifecycleChangeKind.Completed)
+                                            cancellationRegistration.Dispose();
+                                    };
                                 }
 
                                 // Create a "TaskCompletionSource" to represent the task on the
                                 // .NET side and add it to the list of tasks.
 
                                 coroTasks.Add(coroTask);
-                                disposable = null; // yield ownership
 
                                 // Signal that the task was successfully scheduled.
 
@@ -265,10 +304,11 @@ internal sealed class EventLoop : IDisposable
                                 // If the task could not be scheduled, set the exception.
 
                                 request.CompletionSource.SetException(ex);
-                            }
-                            finally
-                            {
-                                disposable?.Dispose();
+
+                                // Clean up any resources allocated for the task.
+
+                                cancellationRegistration.Dispose();
+                                disposable.Dispose();
                             }
                             break;
                         }
@@ -281,7 +321,7 @@ internal sealed class EventLoop : IDisposable
                         {
                             state = RunState.Stopping;
                             foreach (var task in coroTasks)
-                                task.Cancel();
+                                task.Cancel(CancellationToken.None);
                             break;
                         }
                     }
