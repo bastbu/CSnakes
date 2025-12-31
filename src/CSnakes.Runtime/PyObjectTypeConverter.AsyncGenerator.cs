@@ -16,7 +16,7 @@ internal partial class PyObjectTypeConverter
 
         if (!CPythonAPI.IsPyAsyncGenerator(pyObject))
         {
-            throw new InvalidCastException($"Cannot convert {pyObject.GetPythonType()} to a generator.");
+            throw new InvalidCastException($"Cannot convert {pyObject.GetPythonType()} to an asynchronous generator.");
         }
 
         if (!knownDynamicTypes.TryGetValue(destinationType, out DynamicTypeInfo? typeInfo))

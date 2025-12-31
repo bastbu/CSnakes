@@ -110,20 +110,20 @@ internal static class ResultConversionCodeGenerator
                                                ]));
             }
             case AsyncGeneratorType { Yield: var yt, Send: var st }:
-                {
-                    var generator = (Yield: Create(yt), Send: Create(st));
-                    return new ConversionGenerator(TypeReflection.CreateGenericType("IAsyncGenerator",
-                                                   [
-                                                       generator.Yield.TypeSyntax,
-                                                       generator.Send.TypeSyntax,
-                                                   ]),
-                                                   TypeReflection.CreateGenericType("AsyncGenerator",
-                                                   [
-                                                       generator.Yield.TypeSyntax,
-                                                       generator.Send.TypeSyntax,
-                                                       generator.Yield.ImporterTypeSyntax,
-                                                   ]));
-                }
+            {
+                var generator = (Yield: Create(yt), Send: Create(st));
+                return new ConversionGenerator(TypeReflection.CreateGenericType("IAsyncGenerator",
+                                               [
+                                                   generator.Yield.TypeSyntax,
+                                                   generator.Send.TypeSyntax,
+                                               ]),
+                                               TypeReflection.CreateGenericType("AsyncGenerator",
+                                               [
+                                                   generator.Yield.TypeSyntax,
+                                                   generator.Send.TypeSyntax,
+                                                   generator.Yield.ImporterTypeSyntax,
+                                               ]));
+            }
             case CoroutineType { Yield: NoneType, Send: NoneType, Return: var rt }:
             {
                 return new CoroutineConversionGenerator(rt);
