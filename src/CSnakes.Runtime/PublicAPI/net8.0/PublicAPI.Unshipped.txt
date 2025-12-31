@@ -1,18 +1,23 @@
 #nullable enable
+CSnakes.Runtime.GeneratorExtensions
 CSnakes.Runtime.IPythonEnvironmentBuilder.CapturePythonLogs() -> CSnakes.Runtime.IPythonEnvironmentBuilder!
 CSnakes.Runtime.Locators.RedistributablePythonVersion.<Clone>$() -> CSnakes.Runtime.Locators.RedistributablePythonVersion!
 CSnakes.Runtime.Locators.RedistributablePythonVersion.Equals(CSnakes.Runtime.Locators.RedistributablePythonVersion? other) -> bool
 CSnakes.Runtime.Python.AsyncGeneratorIterator<TYield, TSend, TYieldImporter>
-CSnakes.Runtime.Python.AsyncGeneratorIterator<TYield, TSend, TYieldImporter>.AsyncGeneratorIterator(CSnakes.Runtime.Python.PyObject! asyncGenerator, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> void
+CSnakes.Runtime.Python.AsyncGeneratorIterator<TYield, TSend, TYieldImporter>.AsyncGeneratorIterator(CSnakes.Runtime.Python.PyObject! asyncGenerator) -> void
 CSnakes.Runtime.Python.AsyncGeneratorIterator<TYield, TSend, TYieldImporter>.Current.get -> TYield
 CSnakes.Runtime.Python.AsyncGeneratorIterator<TYield, TSend, TYieldImporter>.DisposeAsync() -> System.Threading.Tasks.ValueTask
-CSnakes.Runtime.Python.AsyncGeneratorIterator<TYield, TSend, TYieldImporter>.MoveNextAsync() -> System.Threading.Tasks.ValueTask<bool>
-CSnakes.Runtime.Python.AsyncGeneratorIterator<TYield, TSend, TYieldImporter>.SendAsync(TSend value) -> System.Threading.Tasks.ValueTask<bool>
+CSnakes.Runtime.Python.AsyncGeneratorIterator<TYield, TSend, TYieldImporter>.GetAsyncEnumerator(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerator<TYield>!
+CSnakes.Runtime.Python.AsyncGeneratorIterator<TYield, TSend, TYieldImporter>.SendAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<bool>
+CSnakes.Runtime.Python.AsyncGeneratorIterator<TYield, TSend, TYieldImporter>.SendAsync(TSend value, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<bool>
 CSnakes.Runtime.Python.AsyncGeneratorIterator<TYield, TSend>
 CSnakes.Runtime.Python.AsyncGeneratorIterator<TYield, TSend>.AsyncGeneratorIterator(CSnakes.Runtime.Python.PyObject! coroutine) -> void
 CSnakes.Runtime.Python.IAsyncGeneratorIterator
 CSnakes.Runtime.Python.IAsyncGeneratorIterator<TYield, TSend>
-CSnakes.Runtime.Python.IAsyncGeneratorIterator<TYield, TSend>.SendAsync(TSend value) -> System.Threading.Tasks.ValueTask<bool>
+CSnakes.Runtime.Python.IAsyncGeneratorIterator<TYield, TSend>.Current.get -> TYield
+CSnakes.Runtime.Python.IAsyncGeneratorIterator<TYield, TSend>.GetAsyncEnumerator(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerator<TYield>!
+CSnakes.Runtime.Python.IAsyncGeneratorIterator<TYield, TSend>.SendAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<bool>
+CSnakes.Runtime.Python.IAsyncGeneratorIterator<TYield, TSend>.SendAsync(TSend value, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<bool>
 CSnakes.Runtime.PythonEnvironmentOptions.CaptureLogs.get -> bool
 CSnakes.Runtime.PythonEnvironmentOptions.CaptureLogs.init -> void
 CSnakes.Runtime.PythonEnvironmentOptions.Deconstruct(out string! Home, out string![]! ExtraPaths, out bool InstallSignalHandlers, out bool CaptureLogs) -> void
@@ -21,6 +26,7 @@ CSnakes.Runtime.PythonLogger
 override CSnakes.Runtime.Locators.RedistributablePythonVersion.Equals(object? obj) -> bool
 override CSnakes.Runtime.Locators.RedistributablePythonVersion.GetHashCode() -> int
 override CSnakes.Runtime.Locators.RedistributablePythonVersion.ToString() -> string!
+static CSnakes.Runtime.GeneratorExtensions.ToAsyncEnumerable<T>(this System.Collections.Generic.IAsyncEnumerator<T>! generator) -> System.Collections.Generic.IAsyncEnumerable<T>!
 static CSnakes.Runtime.Locators.RedistributablePythonVersion.operator !=(CSnakes.Runtime.Locators.RedistributablePythonVersion? left, CSnakes.Runtime.Locators.RedistributablePythonVersion? right) -> bool
 static CSnakes.Runtime.Locators.RedistributablePythonVersion.operator ==(CSnakes.Runtime.Locators.RedistributablePythonVersion? left, CSnakes.Runtime.Locators.RedistributablePythonVersion? right) -> bool
 CSnakes.Runtime.Python.ICoroutine<T>

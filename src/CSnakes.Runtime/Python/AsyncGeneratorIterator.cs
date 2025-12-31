@@ -3,7 +3,7 @@ namespace CSnakes.Runtime.Python;
 public sealed class AsyncGeneratorIterator<TYield, TSend>(PyObject coroutine) :
     AsyncGeneratorIterator<TYield, TSend, PyObjectImporters.Runtime<TYield>>(coroutine);
 
-public class AsyncGeneratorIterator<TYield, TSend, TYieldImporter>(PyObject asyncGenerator, CancellationToken cancellationToken = default) :
+public class AsyncGeneratorIterator<TYield, TSend, TYieldImporter>(PyObject asyncGenerator) :
     IAsyncGeneratorIterator<TYield, TSend>
     where TYieldImporter : IPyObjectImporter<TYield>
 {
@@ -11,7 +11,6 @@ public class AsyncGeneratorIterator<TYield, TSend, TYieldImporter>(PyObject asyn
     private readonly PyObject asyncGenerator = asyncGenerator;
     private readonly PyObject aclosePyFunction = asyncGenerator.GetAttr("aclose");
     private readonly PyObject asendPyFunction = asyncGenerator.GetAttr("asend");
-    private readonly CancellationToken cancellationToken = cancellationToken;
 
     private TYield current = default!;
 
@@ -36,15 +35,19 @@ public class AsyncGeneratorIterator<TYield, TSend, TYieldImporter>(PyObject asyn
         disposed = true;
     }
 
-    public ValueTask<bool> MoveNextAsync() => SendAsync(PyObject.None);
+    public IAsyncEnumerator<TYield> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
+        new Enumerator(this, cancellationToken);
 
-    public async ValueTask<bool> SendAsync(TSend value)
+    public async ValueTask<bool> SendAsync(TSend value, CancellationToken cancellationToken)
     {
         using var valuePyObject = PyObject.From(value);
-        return await SendAsync(valuePyObject).ConfigureAwait(false);
+        return await SendAsync(valuePyObject, cancellationToken).ConfigureAwait(false);
     }
 
-    private async ValueTask<bool> SendAsync(PyObject value)
+    public ValueTask<bool> SendAsync(CancellationToken cancellationToken) =>
+        SendAsync(PyObject.None, cancellationToken);
+
+    private async ValueTask<bool> SendAsync(PyObject value, CancellationToken cancellationToken)
     {
         try
         {
@@ -56,5 +59,13 @@ public class AsyncGeneratorIterator<TYield, TSend, TYieldImporter>(PyObject asyn
         {
             return false;
         }
+    }
+
+    private sealed class Enumerator(AsyncGeneratorIterator<TYield, TSend, TYieldImporter> asyncGenerator,
+                                    CancellationToken cancellationToken) : IAsyncEnumerator<TYield>
+    {
+        public TYield Current => asyncGenerator.Current;
+        public ValueTask DisposeAsync() => asyncGenerator.DisposeAsync();
+        public ValueTask<bool> MoveNextAsync() => asyncGenerator.SendAsync(cancellationToken);
     }
 }

@@ -64,6 +64,7 @@ internal sealed class EventLoop : IDisposable
         private readonly PyObject pyTask = pyTask;
         private PyObject? doneMethod;
         private CancellationToken cancellationToken;
+        private readonly string id = Guid.NewGuid().ToString();
 
         public enum LifecycleChangeKind { Canceling, Completed }
         public event Action<CoroutineTask, LifecycleChangeKind>? LifecycleChange;
