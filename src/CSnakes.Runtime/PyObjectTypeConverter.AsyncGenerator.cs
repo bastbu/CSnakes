@@ -8,11 +8,11 @@ namespace CSnakes.Runtime;
 internal partial class PyObjectTypeConverter
 {
     [RequiresDynamicCode(DynamicCodeMessages.CallsMakeGenericType)]
-    internal static object ConvertToAsyncGeneratorIterator(PyObject pyObject, Type destinationType)
+    internal static object ConvertToAsyncGenerator(PyObject pyObject, Type destinationType)
     {
         Debug.Assert(destinationType.IsGenericType);
         Debug.Assert(!destinationType.IsGenericTypeDefinition);
-        Debug.Assert(destinationType.GetGenericTypeDefinition() == typeof(IAsyncGeneratorIterator<,>));
+        Debug.Assert(destinationType.GetGenericTypeDefinition() == typeof(IAsyncGenerator<,>));
 
         if (!CPythonAPI.IsPyAsyncGenerator(pyObject))
         {
@@ -22,7 +22,7 @@ internal partial class PyObjectTypeConverter
         if (!knownDynamicTypes.TryGetValue(destinationType, out DynamicTypeInfo? typeInfo))
         {
             var typeArgs = destinationType.GetGenericArguments();
-            Type generatorType = typeof(AsyncGeneratorIterator<,>).MakeGenericType(typeArgs);
+            Type generatorType = typeof(AsyncGenerator<,>).MakeGenericType(typeArgs);
             ConstructorInfo ctor = generatorType.GetConstructors().First();
             typeInfo = new(ctor);
             knownDynamicTypes[destinationType] = typeInfo;

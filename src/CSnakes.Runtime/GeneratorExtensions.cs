@@ -2,15 +2,20 @@ namespace CSnakes.Runtime;
 
 public static class GeneratorExtensions
 {
-    public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IAsyncEnumerator<T> generator)
+    public static IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IAsyncEnumerator<T> generator)
     {
         ArgumentNullException.ThrowIfNull(generator);
 
-        await using (generator.ConfigureAwait(false))
+        return Core(generator);
+
+        static async IAsyncEnumerable<T> Core(IAsyncEnumerator<T> generator)
         {
-            while (await generator.MoveNextAsync().ConfigureAwait(false))
+            await using (generator.ConfigureAwait(false))
             {
-                yield return generator.Current;
+                while (await generator.MoveNextAsync().ConfigureAwait(false))
+                {
+                    yield return generator.Current;
+                }
             }
         }
     }

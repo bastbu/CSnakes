@@ -55,7 +55,7 @@ public static class TypeReflection
     {
         return from yieldTypeI in AsPredefinedType(yieldType, direction)
                from sendTypeI in AsPredefinedType(sendType, direction)
-               select CreateGenericType("IAsyncGeneratorIterator", [yieldTypeI, sendTypeI]);
+               select CreateGenericType("IAsyncGenerator", [yieldTypeI, sendTypeI]);
     }
 
     private static IEnumerable<TypeSyntax> CreateCoroutineType(PythonTypeSpec returnType, ConversionDirection direction)

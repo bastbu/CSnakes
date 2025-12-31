@@ -1,10 +1,10 @@
 namespace CSnakes.Runtime.Python;
 
-public sealed class AsyncGeneratorIterator<TYield, TSend>(PyObject coroutine) :
-    AsyncGeneratorIterator<TYield, TSend, PyObjectImporters.Runtime<TYield>>(coroutine);
+public sealed class AsyncGenerator<TYield, TSend>(PyObject coroutine) :
+    AsyncGenerator<TYield, TSend, PyObjectImporters.Runtime<TYield>>(coroutine);
 
-public class AsyncGeneratorIterator<TYield, TSend, TYieldImporter>(PyObject asyncGenerator) :
-    IAsyncGeneratorIterator<TYield, TSend>
+public class AsyncGenerator<TYield, TSend, TYieldImporter>(PyObject asyncGenerator) :
+    IAsyncGenerator<TYield, TSend>
     where TYieldImporter : IPyObjectImporter<TYield>
 {
     private bool disposed = false;
@@ -61,7 +61,7 @@ public class AsyncGeneratorIterator<TYield, TSend, TYieldImporter>(PyObject asyn
         }
     }
 
-    private sealed class Enumerator(AsyncGeneratorIterator<TYield, TSend, TYieldImporter> asyncGenerator,
+    private sealed class Enumerator(AsyncGenerator<TYield, TSend, TYieldImporter> asyncGenerator,
                                     CancellationToken cancellationToken) : IAsyncEnumerator<TYield>
     {
         public TYield Current => asyncGenerator.Current;

@@ -9,5 +9,5 @@ internal partial class PyObjectTypeConverter
     static readonly Type dictionaryType = typeof(IReadOnlyDictionary<,>);
     static readonly Type pyObjectType = typeof(PyObject);
     static readonly Type generatorIteratorType = typeof(IGeneratorIterator<,,>);
-    static readonly Type asyncGeneratorIteratorType = typeof(IAsyncGeneratorIterator<,>);
+    static readonly Type asyncGeneratorType = typeof(IAsyncGenerator<,>);
 }

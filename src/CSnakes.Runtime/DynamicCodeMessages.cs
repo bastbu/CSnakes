@@ -7,7 +7,7 @@ internal class DynamicCodeMessages
     private const string Type = nameof(Type);
     private const string MakeGenericType = $"{nameof(System)}.{Type}.{nameof(System.Type.MakeGenericType)}(params {Type}[])";
     // TODO Use open generic type names when available in C# 14+
-    private const string IAsyncGeneratorIterator = nameof(IAsyncGeneratorIterator<object,object>);
+    private const string IAsyncGenerator = nameof(IAsyncGenerator<object,object>);
     private const string IGeneratorIterator = nameof(IGeneratorIterator<object,object,object>);
     private const string IReadOnlyList = nameof(IReadOnlyList<object>);
     private const string IReadOnlyDictionary = nameof(IReadOnlyDictionary<object, object>);
@@ -20,7 +20,7 @@ internal class DynamicCodeMessages
     public const string MayCallMakeGenericType =
         $"Calls '{MakeGenericType}' when converting to generic " +
         $"'{IGeneratorIterator}', " +
-        $"'{IAsyncGeneratorIterator}', " +
+        $"'{IAsyncGenerator}', " +
         $"'{IReadOnlyList}', " +
         $"'{IReadOnlyDictionary} 'or " +
         $"'{ICoroutine}', or a tuple containing any of the aforementioned as one or more elements. {Instead}";

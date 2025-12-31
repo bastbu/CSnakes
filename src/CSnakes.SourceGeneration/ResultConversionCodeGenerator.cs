@@ -112,7 +112,7 @@ internal static class ResultConversionCodeGenerator
             case AsyncGeneratorType { Yield: var yt, Send: var st }:
                 {
                     var generator = (Yield: Create(yt), Send: Create(st));
-                    return new ConversionGenerator(TypeReflection.CreateGenericType("IAsyncGeneratorIterator",
+                    return new ConversionGenerator(TypeReflection.CreateGenericType("IAsyncGenerator",
                                                    [
                                                        generator.Yield.TypeSyntax,
                                                        generator.Send.TypeSyntax,

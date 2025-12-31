@@ -240,16 +240,16 @@ public static partial class PyObjectImporters
     }
 
     public sealed class AsyncGenerator<TYield, TSend, TYieldImporter> :
-        IPyObjectImporter<IAsyncGeneratorIterator<TYield, TSend>>
+        IPyObjectImporter<IAsyncGenerator<TYield, TSend>>
         where TYieldImporter : IPyObjectImporter<TYield>
     {
         private AsyncGenerator() { }
 
-        static IAsyncGeneratorIterator<TYield, TSend> IPyObjectImporter<IAsyncGeneratorIterator<TYield, TSend>>.BareImport(PyObject obj)
+        static IAsyncGenerator<TYield, TSend> IPyObjectImporter<IAsyncGenerator<TYield, TSend>>.BareImport(PyObject obj)
         {
             GIL.Require();
             return CPythonAPI.IsPyAsyncGenerator(obj)
-                ? new AsyncGeneratorIterator<TYield, TSend, TYieldImporter>(obj.Clone())
+                ? new Python.AsyncGenerator<TYield, TSend, TYieldImporter>(obj.Clone())
                 : throw InvalidCastException("async_generator", obj);
         }
     }
